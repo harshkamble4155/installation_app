@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:installation_app/helpers/db_helper.dart';
 import 'package:installation_app/models/db_installation_model.dart';
@@ -93,6 +95,36 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     checkData();
     // getUserName();
+  }
+
+  Future<Position> _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 
   Future<void> logoutUser() async {
@@ -306,8 +338,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                     return null;
                   },
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "Location",
+                    suffixIcon: IconButton(
+                        onPressed: () async {
+                          showAlertDialog();
+                          Position position = await _getGeoLocationPosition();
+                          await placemarkFromCoordinates(
+                                  position.latitude, position.longitude)
+                              .then((value) {
+                            Placemark place = value[0];
+                            locationCtrl.text =
+                                '${place.thoroughfare}, ${place.subLocality}, ${place.locality}';
+                            Navigator.of(context).pop();
+                          });
+                        },
+                        icon: const Icon(Icons.location_on)),
                   ),
                 ),
                 const SizedBox(
@@ -458,5 +504,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<Directory?> getPath() {
     return getExternalStorageDirectory();
+  }
+
+  showAlertDialog() async {
+    final alertDialog = AlertDialog(
+      content: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20),
+        child: Row(
+          children: const [
+            CircularProgressIndicator(),
+            SizedBox(width: 20,),
+            Text('Fetching location...')
+          ],
+        ),
+      ),
+    );
+    showDialog(context: context, builder: (context) => alertDialog);
   }
 }

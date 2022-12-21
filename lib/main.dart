@@ -92,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> {
           () {
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
+                  builder: (context) => const LoginScreen(), // change here
                 ),
                 (route) => false);
           },
@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> {
         () {
           Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => const LoginScreen(),
+                builder: (context) => const LoginScreen(), // change here
               ),
               (route) => false);
         },

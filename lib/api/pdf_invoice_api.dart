@@ -581,6 +581,41 @@ class PdfInvoiceApi {
             ),
           ],
         ),
+        TableRow(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Text(
+                    'Length of Tail Cables(Mtrs)',
+                    style: const TextStyle(
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: SizedBox(
+                    width: 100,
+                    child: Text(
+                      finalDataModel.taileCable,
+                      style: const TextStyle(
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         // third row
         TableRow(
           children: [
